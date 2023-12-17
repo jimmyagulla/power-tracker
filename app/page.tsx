@@ -82,20 +82,26 @@ export default function Home() {
         exercises: [],
       };
 
-      const row: SheetTableRow = rows[sessionIndex + 1];
+      for (let i = sessionIndex + 1; i < rows.length; i++) {
+        const row: SheetTableRow = rows[i];
 
-      for (let j = 0; j < row.c.length; j++) {
-        if (typeof row.c[j]?.v !== 'string') continue;
+        for (let j = 0; j < row.c.length; j++) {
+          if (typeof row.c[j]?.v !== 'string') continue;
 
-        const cellName = String(row.c[j]?.v);
+          const cellName = String(row.c[j]?.v);
 
-        if (cellName) {
-          if (cellName.startsWith('Session') || cellName.startsWith('Slot')) {
-            return session;
+          if (cellName) {
+            if (cellName.startsWith('Session') || cellName.startsWith('Slot') || cellName.startsWith('Bloc')) {
+              return session;
+            }
+
+            if (cellName === 'Protocole & Indications' || cellName.startsWith('\n') || cellName.startsWith(' ') || cellName.startsWith('▪')) {
+              continue;
+            }
+
+            session.exercises.push(getExercise(rows, i - 1, j));
           }
 
-          // console.log('pushing exercise for session: ', session.title, '\n\n on cell: ', cellName);
-          session.exercises.push(getExercise(rows, sessionIndex, j));
         }
       }
 
@@ -111,7 +117,6 @@ export default function Home() {
     rows.forEach((row: SheetTableRow, rowIndex: number) => {
       row.c.forEach((cell: SheetTableCell, cellIndex) => {
         if (cell?.v && typeof cell.v === 'string' && cell.v.startsWith('Session')) {
-          // console.log('getting full session for: ', cell.v);
           const session = getFullSession(rows, rowIndex, cellIndex);
           console.log('session: ', session);
           return;
